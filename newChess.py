@@ -71,50 +71,21 @@ class Rook(Piece):
         Piece.__init__(self, color, x, y)
     
     def __str__(self):
-        #return f"Rook at {self.x}, {self.y}"
         return "R" if self.color == WHITE else "r"
 
     def move(self, game_object):
 
         for i in range(1, 8):
-            piece_1 = game_object.get_piece_at(self.x + i, self.y)
-
-            if piece_1 is None: game_object.legal_moves.append((self.x + i, self.y))
-            elif piece_1.color != self.color: 
-                game_object.legal_takes.append((self.x + i, self.y))
-                break
-            else:
-                break
+            if game_object.check_moves_on_square(self, i, 0): break
+            
+        for i in range(1, 8):
+            if game_object.check_moves_on_square(self, -i, 0): break
 
         for i in range(1, 8):
-            piece_1 = game_object.get_piece_at(self.x - i, self.y)
-
-            if piece_1 is None: game_object.legal_moves.append((self.x - i, self.y))
-            elif piece_1.color != self.color: 
-                game_object.legal_takes.append((self.x - i, self.y))
-                break
-            else:
-                break
+            if game_object.check_moves_on_square(self, 0, -i): break
 
         for i in range(1, 8):
-            piece_1 = game_object.get_piece_at(self.x, self.y - i)
-
-            if piece_1 is None: game_object.legal_moves.append((self.x, self.y - i))
-            elif piece_1.color != self.color: 
-                game_object.legal_takes.append((self.x, self.y - i))
-                break
-            else:
-                break
-
-        for i in range(1, 8):
-            piece_1 = game_object.get_piece_at(self.x, self.y + i)
-
-            if piece_1 is None: game_object.legal_moves.append((self.x, self.y + i))
-            elif piece_1.color != self.color: 
-                game_object.legal_takes.append((self.x, self.y + i))
-                break
-            else:
-                break
+            if game_object.check_moves_on_square(self, 0, i): break
 
 class Knight(Piece):
 
@@ -126,35 +97,14 @@ class Knight(Piece):
 
     def move(self, game_object):
         
-        piece_1 = game_object.get_piece_at(self.x + 1, self.y + 2)
-        piece_2 = game_object.get_piece_at(self.x + 1, self.y - 2)
-
-        piece_3 = game_object.get_piece_at(self.x - 1, self.y + 2)
-        piece_4 = game_object.get_piece_at(self.x - 1, self.y - 2)
-
-        piece_5 = game_object.get_piece_at(self.x + 2, self.y + 1)
-        piece_6 = game_object.get_piece_at(self.x + 2, self.y - 1)
-
-        piece_7 = game_object.get_piece_at(self.x - 2, self.y + 1)
-        piece_8 = game_object.get_piece_at(self.x - 2, self.y - 1)
-
-        if piece_1 is None: game_object.legal_moves.append((self.x + 1, self.y + 2))
-        if piece_2 is None: game_object.legal_moves.append((self.x + 1, self.y - 2))
-        if piece_3 is None: game_object.legal_moves.append((self.x - 1, self.y + 2))
-        if piece_4 is None: game_object.legal_moves.append((self.x - 1, self.y - 2))
-        if piece_5 is None: game_object.legal_moves.append((self.x + 2, self.y + 1))
-        if piece_6 is None: game_object.legal_moves.append((self.x + 2, self.y - 1))
-        if piece_7 is None: game_object.legal_moves.append((self.x - 2, self.y + 1))
-        if piece_8 is None: game_object.legal_moves.append((self.x - 2, self.y - 1))
-
-        if piece_1 is not None and piece_1.color != self.color: game_object.legal_takes.append((self.x + 1, self.y + 2))
-        if piece_2 is not None and piece_2.color != self.color: game_object.legal_takes.append((self.x + 1, self.y - 2))
-        if piece_3 is not None and piece_3.color != self.color: game_object.legal_takes.append((self.x - 1, self.y + 2))
-        if piece_4 is not None and piece_4.color != self.color: game_object.legal_takes.append((self.x - 1, self.y - 2))
-        if piece_5 is not None and piece_5.color != self.color: game_object.legal_takes.append((self.x + 2, self.y + 1))
-        if piece_6 is not None and piece_6.color != self.color: game_object.legal_takes.append((self.x + 2, self.y - 1))
-        if piece_7 is not None and piece_7.color != self.color: game_object.legal_takes.append((self.x - 2, self.y + 1))
-        if piece_8 is not None and piece_8.color != self.color: game_object.legal_takes.append((self.x - 2, self.y - 1))
+        game_object.check_moves_on_square(self, 1, 2)
+        game_object.check_moves_on_square(self, 1, -2)
+        game_object.check_moves_on_square(self, -1, 2)
+        game_object.check_moves_on_square(self, -1, -2)
+        game_object.check_moves_on_square(self, 2, 1)
+        game_object.check_moves_on_square(self, 2, -1)
+        game_object.check_moves_on_square(self, -2, 1)
+        game_object.check_moves_on_square(self, -2, -1)
 
 class Bishop(Piece):
 
@@ -167,44 +117,16 @@ class Bishop(Piece):
     def move(self, game_object):
 
         for i in range(1, 8):
-            piece_1 = game_object.get_piece_at(self.x + i, self.y + i)
-
-            if piece_1 is None: game_object.legal_moves.append((self.x + i, self.y + i))
-            elif piece_1.color != self.color: 
-                game_object.legal_takes.append((self.x + i, self.y + i))
-                break
-            else:
-                break
+            if game_object.check_moves_on_square(self, i, i): break
 
         for i in range(1, 8):
-            piece_1 = game_object.get_piece_at(self.x - i, self.y + i)
-
-            if piece_1 is None: game_object.legal_moves.append((self.x - i, self.y + i))
-            elif piece_1.color != self.color: 
-                game_object.legal_takes.append((self.x - i, self.y + i))
-                break
-            else:
-                break
+            if game_object.check_moves_on_square(self, -i, i): break
 
         for i in range(1, 8):
-            piece_1 = game_object.get_piece_at(self.x + i, self.y - i)
-
-            if piece_1 is None: game_object.legal_moves.append((self.x + i, self.y - i))
-            elif piece_1.color != self.color: 
-                game_object.legal_takes.append((self.x + i, self.y - i))
-                break
-            else:
-                break
+            if game_object.check_moves_on_square(self, i, -i): break
 
         for i in range(1, 8):
-            piece_1 = game_object.get_piece_at(self.x - i, self.y - i)
-
-            if piece_1 is None: game_object.legal_moves.append((self.x - i, self.y - i))
-            elif piece_1.color != self.color: 
-                game_object.legal_takes.append((self.x - i, self.y - i))
-                break
-            else:
-                break
+            if game_object.check_moves_on_square(self, -i, -i): break
 
 class Pawn(Piece):
 
@@ -215,17 +137,14 @@ class Pawn(Piece):
         return "P" if self.color == WHITE else "p"
 
     def move(self, game_object):
+
+        game_object.check_moves_on_square(self, 0, 1 * self.color, False)
+
+        if not self.moved:
+            game_object.check_moves_on_square(self, 0, 2 * self.color, False)
         
-        piece_1 = game_object.get_piece_at(self.x, self.y + 1 * self.color)
-        piece_2 = game_object.get_piece_at(self.x, self.y + 2 * self.color)
-        piece_3 = game_object.get_piece_at(self.x + 1, self.y + 1 * self.color)
-        piece_4 = game_object.get_piece_at(self.x - 1, self.y + 1 * self.color)
-
-        if piece_1 is None: game_object.legal_moves.append((self.x, self.y + 1 * self.color))
-        if piece_1 is None and piece_2 is None and not self.moved: game_object.legal_moves.append((self.x, self.y + 2 * self.color))
-
-        if piece_3 is not None and piece_3.color != self.color: game_object.legal_takes.append((self.x + 1, self.y + 1 * self.color))
-        if piece_4 is not None and piece_4.color != self.color: game_object.legal_takes.append((self.x - 1, self.y + 1 * self.color))
+        game_object.check_moves_on_square(self, 1, 1 * self.color, True, False)
+        game_object.check_moves_on_square(self, -1, 1 * self.color, True, False)
 
 class Queen(Piece):
 
@@ -252,40 +171,15 @@ class King(Piece):
         return "K" if self.color == WHITE else "k"
 
     def move(self, game_object):
-        piece_1 = game_object.get_piece_at(self.x + 1, self.y + 1)
-        piece_2 = game_object.get_piece_at(self.x , self.y + 1)
-        piece_3 = game_object.get_piece_at(self.x - 1, self.y + 1)
-
-        piece_4 = game_object.get_piece_at(self.x + 1, self.y)
-        piece_5 = game_object.get_piece_at(self.x - 1, self.y)
-
-        piece_6 = game_object.get_piece_at(self.x + 1, self.y - 1)
-        piece_7 = game_object.get_piece_at(self.x , self.y - 1)
-        piece_8 = game_object.get_piece_at(self.x - 1, self.y - 1)
-
-        if piece_1 is None: game_object.legal_moves.append((self.x + 1, self.y + 1))
-        elif piece_1.color != self.color: game_object.legal_takes.append((self.x + 1, self.y + 1))
-
-        if piece_2 is None: game_object.legal_moves.append((self.x, self.y + 1))
-        elif piece_2.color != self.color: game_object.legal_takes.append((self.x, self.y + 1))
-
-        if piece_3 is None: game_object.legal_moves.append((self.x - 1,self. y + 1))
-        elif piece_3.color != self.color: game_object.legal_takes.append((self.x - 1, self.y + 1))
-
-        if piece_4 is None: game_object.legal_moves.append((self.x + 1, self.y))
-        elif piece_4.color != self.color: game_object.legal_takes.append((self.x + 1, self.y))
-
-        if piece_5 is None: game_object.legal_moves.append((self.x - 1, self.y))
-        elif piece_5.color != self.color: game_object.legal_takes.append((self.x - 1, self.y))
-
-        if piece_6 is None: game_object.legal_moves.append((self.x + 1,self. y - 1))
-        elif piece_6.color != self.color: game_object.legal_takes.append((self.x + 1, self.y - 1))
-
-        if piece_7 is None: game_object.legal_moves.append((self.x, self.y - 1))
-        elif piece_7.color != self.color: game_object.legal_takes.append((self.x, self.y - 1))
-
-        if piece_8 is None: game_object.legal_moves.append((self.x - 1, self.y -1))
-        elif piece_8.color != self.color: game_object.legal_takes.append((self.x - 1, self.y - 1))
+        
+        game_object.check_moves_on_square(self, 1, 1)
+        game_object.check_moves_on_square(self, 1, 0)
+        game_object.check_moves_on_square(self, 1, -1)
+        game_object.check_moves_on_square(self, 0, -1)
+        game_object.check_moves_on_square(self, -1, -1)
+        game_object.check_moves_on_square(self, -1, 0)
+        game_object.check_moves_on_square(self, -1, 1)
+        game_object.check_moves_on_square(self, 0, 1)
 
 class Chess(arcade.Window):
     def __init__(self):
@@ -760,6 +654,22 @@ class Chess(arcade.Window):
 
         return None
 
+    def check_moves_on_square(self, cur_piece, x_offset, y_offset, can_take = True, can_move = True):
+
+        x_coord = cur_piece.x + x_offset
+        y_coord = cur_piece.y + y_offset
+
+        other_piece = self.get_piece_at(x_coord, y_coord)
+
+        if other_piece is None and can_move: 
+            self.legal_moves.append((x_coord, y_coord))
+            return False
+        elif other_piece is not None and other_piece.color != cur_piece.color and can_take: 
+            self.legal_takes.append((x_coord, y_coord))
+        
+        return True
+
+        
     def initialize_pieces(self):
 
         piece_list = []
