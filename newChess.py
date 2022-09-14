@@ -1,36 +1,30 @@
 from ast import Return
 import arcade
 
-# constants
+# Colors
 WHITE = 1
 BLACK = -1
 
-PAWN = 0
-KNIGHT = 1
-BISHOP = 2
-ROOK = 3
-QUEEN = 4
-KING = 5
-
+# Piece values for displaying evaluation
 PAWN_VALUE = 1
 KNIGHT_VALUE = 3
 BISHOP_VALUE = 3
 ROOK_VALUE = 5
 QUEEN_VALUE = 8
 
+# Game states
 NORMAL = 0
 CHECKMATE = 1
 STALEMATE = 2
 
+# Screen pixel ratios
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
 PIXELS_PER_SQUARE = 100
-PIXELS_FROM_BOTTOM_TO_BOARD = 150
-PIXELS_FROM_SIDE_TO_BOARD = 150
+
 
 
 class Move:
-
     def __init__(self, prev_x, prev_y, new_x, new_y, moved_piece, taken_piece, moved_piece_moved, taken_piece_moved, taken_piece_sprite_img, promotion = False):
         self.prev_x = prev_x
         self.prev_y = prev_y
@@ -42,15 +36,11 @@ class Move:
         self.taken_piece_moved = taken_piece_moved
         self.taken_piece_sprite_img = taken_piece_sprite_img
         self.promotion = promotion
-    
-    def __str__(self):
-        return f"moved {self.moved_piece} from ({self.prev_x}, {self.prev_y}) to ({self.new_x}, {self.new_y}) taking {self.taken_piece}"
 
     def return_data(self):
         return (self.prev_x, self.prev_y, self.new_x, self.new_y, self.moved_piece, self.taken_piece, self.moved_piece_moved, self.taken_piece_moved, self.taken_piece_sprite_img, self.promotion)
 
 class Piece:
-    
     def __init__(self, color, x, y):
         self.color = color
         self.x = x
@@ -59,22 +49,24 @@ class Piece:
         self.moved = False
 
     def add_sprite(self, scene, sprite_image):
-        self.sprite = arcade.Sprite(sprite_image, 0.1)
-        self.sprite.center_x = self.x * PIXELS_PER_SQUARE + PIXELS_FROM_SIDE_TO_BOARD
-        self.sprite.center_y = self.y * PIXELS_PER_SQUARE + PIXELS_FROM_BOTTOM_TO_BOARD
+        self.sprite = arcade.Sprite(sprite_image, PIXELS_PER_SQUARE / 1000)
+        self.sprite.center_x = (self.x + 1.5) * PIXELS_PER_SQUARE
+        self.sprite.center_y = (self.y + 1.5) * PIXELS_PER_SQUARE
         scene.add_sprite(f"Piece at {self.x}, {self.y}", self.sprite)
         self.sprite_image = sprite_image
 
 class Rook(Piece):
-
     def __init__(self, color, x, y):
         Piece.__init__(self, color, x, y)
     
+    # For generating FEN strings - lowercase for white, uppercase for black
     def __str__(self):
         return "R" if self.color == WHITE else "r"
 
+    # Adds all potential "moves" to self.legal_moves and all potential "takes"
+    # to self.legal_takes. Moves and takes later evaluated to ensure they do
+    # not move king into check by Chess.display_legal_moves
     def move(self, game_object):
-
         for i in range(1, 8):
             if game_object.check_moves_on_square(self, i, 0): break
             
@@ -88,7 +80,6 @@ class Rook(Piece):
             if game_object.check_moves_on_square(self, 0, i): break
 
 class Knight(Piece):
-
     def __init__(self, color, x, y):
         Piece.__init__(self, color, x, y)
 
@@ -96,7 +87,6 @@ class Knight(Piece):
         return "N" if self.color == WHITE else "n"
 
     def move(self, game_object):
-        
         game_object.check_moves_on_square(self, 1, 2)
         game_object.check_moves_on_square(self, 1, -2)
         game_object.check_moves_on_square(self, -1, 2)
@@ -107,7 +97,6 @@ class Knight(Piece):
         game_object.check_moves_on_square(self, -2, -1)
 
 class Bishop(Piece):
-
     def __init__(self, color, x, y):
         Piece.__init__(self, color, x, y)
 
@@ -115,7 +104,6 @@ class Bishop(Piece):
         return "B" if self.color == WHITE else "b"
 
     def move(self, game_object):
-
         for i in range(1, 8):
             if game_object.check_moves_on_square(self, i, i): break
 
@@ -129,7 +117,6 @@ class Bishop(Piece):
             if game_object.check_moves_on_square(self, -i, -i): break
 
 class Pawn(Piece):
-
     def __init__(self, color, x, y):
         Piece.__init__(self, color, x, y)
 
@@ -137,17 +124,17 @@ class Pawn(Piece):
         return "P" if self.color == WHITE else "p"
 
     def move(self, game_object):
-
         game_object.check_moves_on_square(self, 0, 1 * self.color, False)
-
+        
+        # allow pawn to move forward 2 squares (can only move, not capture) if it hasn't moved
         if not self.moved:
             game_object.check_moves_on_square(self, 0, 2 * self.color, False)
         
+        # allow pawn to capture (not move) to squares diagonally in front of it
         game_object.check_moves_on_square(self, 1, 1 * self.color, True, False)
         game_object.check_moves_on_square(self, -1, 1 * self.color, True, False)
 
 class Queen(Piece):
-
     def __init__(self, color, x, y):
         Piece.__init__(self, color, x, y)
 
@@ -155,7 +142,8 @@ class Queen(Piece):
         return "Q" if self.color == WHITE else "q"
 
     def move(self, game_object):
-
+        # use rook and bishop move functions to calculae queen moves
+        # instead of rewriting same code
         temp_rook = Rook(self.color, self.x, self.y)
         temp_bishop = Bishop(self.color, self.x, self.y)
 
@@ -163,7 +151,6 @@ class Queen(Piece):
         temp_bishop.move(game_object)
 
 class King(Piece):
-
     def __init__(self, color, x, y):
         Piece.__init__(self, color, x, y)
 
@@ -171,7 +158,6 @@ class King(Piece):
         return "K" if self.color == WHITE else "k"
 
     def move(self, game_object):
-        
         game_object.check_moves_on_square(self, 1, 1)
         game_object.check_moves_on_square(self, 1, 0)
         game_object.check_moves_on_square(self, 1, -1)
@@ -183,11 +169,13 @@ class King(Piece):
 
 class Chess(arcade.Window):
     def __init__(self):
-        super().__init__(1000, 1000, title="Nick Baker's Chess")
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, title="Nick Baker's Chess")
 
         self.color_to_move = WHITE
         self.king_in_check = False
-        self.selected_piece, self.white_king, self.black_king, self.white_king_rook, self.white_queen_rook, self.black_king_rook, self.black_queen_rook = None, None, None, None, None, None, None
+        self.selected_piece = None
+        self.white_king, self.black_king = None, None
+        self.white_king_rook, self.white_queen_rook, self.black_king_rook, self.black_queen_rook = None, None, None, None
         self.move_list, self.legal_moves, self.legal_takes = [], [], []
         self.game_state = NORMAL
 
@@ -213,7 +201,7 @@ class Chess(arcade.Window):
             temp_sprite_list.append(temp_sprite)
 
         for entry in self.legal_takes:
-            temp_sprite = self.add_sprite(entry, "chesssprites/red_circle.png", 0.045)
+            temp_sprite = self.add_sprite(entry, "chesssprites/red_circle.png", PIXELS_PER_SQUARE / 2222)
             temp_sprite_list.append(temp_sprite)
 
         self.scene.draw()
@@ -222,7 +210,6 @@ class Chess(arcade.Window):
             if sprite is not None: sprite.kill()
 
     def display_value(self):
-
         value = 0
         for piece in self.pieces:
             if isinstance(piece, Pawn):
@@ -237,38 +224,38 @@ class Chess(arcade.Window):
                 value += QUEEN_VALUE * piece.color
 
         if value < 0:
-            arcade.draw_text(f"White: {value}", 800, 60, arcade.color.WHITE, 24, width=100, align="left")
-            arcade.draw_text(f"Black: +{-value}", 800, 910, arcade.color.WHITE, 24, width=100, align="left")
+            arcade.draw_text(f"White: {value}", 8 * PIXELS_PER_SQUARE, 0.6 * PIXELS_PER_SQUARE, arcade.color.WHITE, 24, width = PIXELS_PER_SQUARE, align="left")
+            arcade.draw_text(f"Black: +{-value}", 8 * PIXELS_PER_SQUARE, 9.1 * PIXELS_PER_SQUARE, arcade.color.WHITE, 24, width = PIXELS_PER_SQUARE, align="left")
+
         elif value > 0:
-            arcade.draw_text(f"White: +{value}", 800, 60, arcade.color.WHITE, 24, width=100, align="left")
-            arcade.draw_text(f"Black: -{value}", 800, 910, arcade.color.WHITE, 24, width=100, align="left")
+            arcade.draw_text(f"White: +{value}", 8 * PIXELS_PER_SQUARE, 0.6 * PIXELS_PER_SQUARE, arcade.color.WHITE, 24, width = PIXELS_PER_SQUARE, align="left")
+            arcade.draw_text(f"Black: -{value}", 8 * PIXELS_PER_SQUARE, 9.1 * PIXELS_PER_SQUARE, arcade.color.WHITE, 24, width = PIXELS_PER_SQUARE, align="left")
     
     def display_turn(self):
-
         if self.game_state == NORMAL:
             turn = "White" if self.color_to_move == WHITE else "Black"
-            arcade.draw_text(f"{turn} to move", 0, 910, arcade.color.WHITE, 24, width=SCREEN_WIDTH, align="center")
+            arcade.draw_text(f"{turn} to move", 0, 9.1 * PIXELS_PER_SQUARE, arcade.color.WHITE, 24, width=SCREEN_WIDTH, align="center")
 
         elif self.game_state == CHECKMATE:
             turn = "White" if self.color_to_move == BLACK else "Black"
-            arcade.draw_text(f"{turn} wins by Checkmate", 0, 910, arcade.color.WHITE, 24, width=SCREEN_WIDTH, align="center")
+            arcade.draw_text(f"{turn} wins by Checkmate", 0, 9.1 * PIXELS_PER_SQUARE, arcade.color.WHITE, 24, width=SCREEN_WIDTH, align="center")
 
         elif self.game_state == STALEMATE:
             turn = "White" if self.color_to_move == BLACK else "Black"
-            arcade.draw_text(f"Draw by Stalemate", 0, 910, arcade.color.WHITE, 24, width=SCREEN_WIDTH, align="center")
+            arcade.draw_text(f"Draw by Stalemate", 0, 9.1 * PIXELS_PER_SQUARE, arcade.color.WHITE, 24, width=SCREEN_WIDTH, align="center")
 
     def add_sprite(self, coords, image_path, sizing = 0.1):
 
         sprite = arcade.Sprite(image_path, sizing)
-        sprite.center_x = coords[0] * PIXELS_PER_SQUARE + PIXELS_FROM_BOTTOM_TO_BOARD
-        sprite.center_y = coords[1] * PIXELS_PER_SQUARE + PIXELS_FROM_SIDE_TO_BOARD
-        self.scene.add_sprite('legal move indicator', sprite)
+        sprite.center_x = (coords[0] + 1.5)* PIXELS_PER_SQUARE
+        sprite.center_y = (coords[1] + 1.5) * PIXELS_PER_SQUARE
+        self.scene.add_sprite(image_path, sprite)
         return sprite
 
     def on_mouse_press(self, x, y, button, modifiers):
         
         # undo button has been pressed, undo last move
-        if x > 900 and y < 200 and y > 100:
+        if x > 9 * PIXELS_PER_SQUARE and x < 10 * PIXELS_PER_SQUARE and y < 2 * PIXELS_PER_SQUARE and y > 1 * PIXELS_PER_SQUARE:
             self.undo_move(1)
             self.king_in_check = self.in_check()
             self.game_state = NORMAL
@@ -287,6 +274,7 @@ class Chess(arcade.Window):
         cur_piece = self.get_piece_at(x_coord, y_coord)
 
         if (self.selected_piece is not None and isinstance(self.selected_piece, King) and cur_piece is not None and isinstance(cur_piece, Rook)) and self.try_castle(cur_piece): 
+            # castle
             self.generate_fen()
             return
 
@@ -336,7 +324,7 @@ class Chess(arcade.Window):
         
         self.legal_moves = backup_moves
         self.legal_takes = backup_takes
-        if found_legal_moves: return 0
+        if found_legal_moves: return NORMAL
         return CHECKMATE if self.in_check() else STALEMATE
 
     def generate_fen(self):
@@ -501,11 +489,11 @@ class Chess(arcade.Window):
             king.x += 1
             rook.x -= 2
 
-        king.sprite.center_x = king.x * 100 + 150
-        king.sprite.center_y = king.y * 100 + 150
+        king.sprite.center_x = (king.x + 1.5) * PIXELS_PER_SQUARE
+        king.sprite.center_y = (king.y + 1.5) * PIXELS_PER_SQUARE
 
-        rook.sprite.center_x = rook.x * 100 + 150
-        rook.sprite.center_y = rook.y * 100 + 150
+        rook.sprite.center_x = (rook.x + 1.5) * PIXELS_PER_SQUARE
+        rook.sprite.center_y = (rook.y + 1.5) * PIXELS_PER_SQUARE
 
         king.moved, rook.moved = True, True
 
@@ -564,13 +552,13 @@ class Chess(arcade.Window):
             # undo castling
             taken_piece.x = new_x
             taken_piece.y = new_y
-            taken_piece.sprite.center_x = (new_x + 1) * PIXELS_PER_SQUARE + PIXELS_PER_SQUARE / 2
-            taken_piece.sprite.center_y = (new_y + 1) * PIXELS_PER_SQUARE + PIXELS_PER_SQUARE / 2
+            taken_piece.sprite.center_x = (new_x + 1.5) * PIXELS_PER_SQUARE
+            taken_piece.sprite.center_y = (new_y + 1.5) * PIXELS_PER_SQUARE
 
             moved_piece.x = prev_x
             moved_piece.y = prev_y
-            moved_piece.sprite.center_x = (prev_x + 1) * PIXELS_PER_SQUARE + PIXELS_PER_SQUARE / 2
-            moved_piece.sprite.center_y = (prev_y + 1) * PIXELS_PER_SQUARE + PIXELS_PER_SQUARE / 2
+            moved_piece.sprite.center_x = (prev_x + 1.5) * PIXELS_PER_SQUARE
+            moved_piece.sprite.center_y = (prev_y + 1.5) * PIXELS_PER_SQUARE
 
             moved_piece.moved = False
             taken_piece.moved = False
@@ -585,8 +573,8 @@ class Chess(arcade.Window):
             # return moved piece to previous position
             moved_piece.x = prev_x
             moved_piece.y = prev_y
-            moved_piece.sprite.center_x = (prev_x + 1) * PIXELS_PER_SQUARE + PIXELS_PER_SQUARE / 2
-            moved_piece.sprite.center_y = (prev_y + 1) * PIXELS_PER_SQUARE + PIXELS_PER_SQUARE / 2
+            moved_piece.sprite.center_x = (prev_x + 1.5) * PIXELS_PER_SQUARE
+            moved_piece.sprite.center_y = (prev_y + 1.5) * PIXELS_PER_SQUARE
 
             moved_piece.moved = moved_piece_moved
 
@@ -673,67 +661,44 @@ class Chess(arcade.Window):
     def initialize_pieces(self):
 
         piece_list = []
+        
         for x in range(8):
+            
+            self.create_piece(piece_list, Pawn, WHITE, x, 1, "chesssprites/wP.png")
+            self.create_piece(piece_list, Pawn, BLACK, x, 6, "chesssprites/bP.png")
 
-            pawn_white = Pawn(WHITE, x, 1)
-            pawn_black = Pawn(BLACK, x, 6)
-            pawn_white.add_sprite(self.scene, "chesssprites/wP.png")
-            pawn_black.add_sprite(self.scene, "chesssprites/bP.png")
-
-            if x == 0 or x == 7:
-                rook_white = Rook(WHITE, x, 0)
-                rook_black = Rook(BLACK, x, 7)
-                rook_white.add_sprite(self.scene, "chesssprites/wR.png")
-                rook_black.add_sprite(self.scene, "chesssprites/bR.png")
-                piece_list.append(rook_white)
-                piece_list.append(rook_black)
-
-                if self.white_queen_rook is None: 
-                    self.white_queen_rook = rook_white
-                    self.black_queen_rook = rook_black
-                else:
-                    self.white_king_rook = rook_white
-                    self.black_king_rook = rook_black
+            if x == 0:
+                self.white_queen_rook = self.create_piece(piece_list, Rook, WHITE, x, 0, "chesssprites/wR.png")
+                self.black_queen_rook = self.create_piece(piece_list, Rook, BLACK, x, 7, "chesssprites/bR.png")
+                
+            elif x == 7:
+                self.white_king_rook = self.create_piece(piece_list, Rook, WHITE, x, 0, "chesssprites/wR.png")
+                self.black_king_rook = self.create_piece(piece_list, Rook, BLACK, x, 7, "chesssprites/bR.png")
 
             elif x == 1 or x == 6:
-                knight_white = Knight(WHITE,  x, 0)
-                knight_black = Knight(BLACK, x, 7)
-                knight_white.add_sprite(self.scene, "chesssprites/wN.png")
-                knight_black.add_sprite(self.scene, "chesssprites/bN.png")
-                piece_list.append(knight_white)
-                piece_list.append(knight_black)
+                self.create_piece(piece_list, Knight, WHITE, x, 0, "chesssprites/wN.png")
+                self.create_piece(piece_list, Knight, BLACK, x, 7, "chesssprites/bN.png")
                 
-
             elif x == 2 or x == 5:
-                bishop_white = Bishop(WHITE, x, 0)
-                bishop_black = Bishop(BLACK, x, 7)
-                bishop_white.add_sprite(self.scene, "chesssprites/wB.png")
-                bishop_black.add_sprite(self.scene, "chesssprites/bB.png")
-                piece_list.append(bishop_white)
-                piece_list.append(bishop_black)
+                self.create_piece(piece_list, Bishop, WHITE, x, 0, "chesssprites/wB.png")
+                self.create_piece(piece_list, Bishop, BLACK, x, 7, "chesssprites/bB.png")
 
             elif x == 3:
-                queen_white = Queen(WHITE, x, 0)
-                queen_black = Queen(BLACK, x, 7)
-                queen_white.add_sprite(self.scene, "chesssprites/wQ.png")
-                queen_black.add_sprite(self.scene, "chesssprites/bQ.png")
-                piece_list.append(queen_white)
-                piece_list.append(queen_black)
+                self.create_piece(piece_list, Queen, WHITE, x, 0, "chesssprites/wQ.png")
+                self.create_piece(piece_list, Queen, BLACK, x, 7, "chesssprites/bQ.png")
             
             elif x == 4:
-                king_white = King(WHITE, x, 0)
-                king_black = King(BLACK, x, 7)
-                king_white.add_sprite(self.scene, "chesssprites/wK.png")
-                king_black.add_sprite(self.scene, "chesssprites/bK.png")
-                piece_list.append(king_white)
-                piece_list.append(king_black)
-                self.white_king = king_white
-                self.black_king = king_black
+                self.white_king = self.create_piece(piece_list, King, WHITE, x, 0, "chesssprites/wK.png")
+                self.black_king = self.create_piece(piece_list, King, BLACK, x, 7, "chesssprites/bK.png")
             
-            piece_list.append(pawn_white)
-            piece_list.append(pawn_black)
-
         return piece_list
+
+    def create_piece(self, piece_list, piece_class, color, x, y, sprite_image):
+        
+        piece = piece_class(color, x, y)
+        piece.add_sprite(self.scene, sprite_image)
+        piece_list.append(piece)
+        return piece
 
     def init_board(self):
         
@@ -769,6 +734,9 @@ class Chess(arcade.Window):
             temp_y = (king.y + 1) * PIXELS_PER_SQUARE
             arcade.draw_lrtb_rectangle_filled(temp_x, temp_x + PIXELS_PER_SQUARE, temp_y + PIXELS_PER_SQUARE, temp_y, arcade.color.CAMEO_PINK)
 
+        self.draw_rank_file_names()
+        
+    def draw_rank_file_names(self):
         arcade.draw_text("A", 1.75 * PIXELS_PER_SQUARE, 1.05 * PIXELS_PER_SQUARE, arcade.color.BLACK, 16, width=PIXELS_PER_SQUARE, align="left")
         arcade.draw_text("B", 2.75 * PIXELS_PER_SQUARE, 1.05 * PIXELS_PER_SQUARE, arcade.color.BLACK, 16, width=PIXELS_PER_SQUARE, align="left")
         arcade.draw_text("C", 3.75 * PIXELS_PER_SQUARE, 1.05 * PIXELS_PER_SQUARE, arcade.color.BLACK, 16, width=PIXELS_PER_SQUARE, align="left")
@@ -786,6 +754,7 @@ class Chess(arcade.Window):
         arcade.draw_text("6", 1.05 * PIXELS_PER_SQUARE, 6.75 * PIXELS_PER_SQUARE, arcade.color.BLACK, 16, width=PIXELS_PER_SQUARE, align="left")
         arcade.draw_text("7", 1.05 * PIXELS_PER_SQUARE, 7.75 * PIXELS_PER_SQUARE, arcade.color.BLACK, 16, width=PIXELS_PER_SQUARE, align="left")
         arcade.draw_text("8", 1.05 * PIXELS_PER_SQUARE, 8.75 * PIXELS_PER_SQUARE, arcade.color.BLACK, 16, width=PIXELS_PER_SQUARE, align="left")
+
 
     def load_indicators(self):
         # when initializing the window, load these sprites into memory before they are needed
