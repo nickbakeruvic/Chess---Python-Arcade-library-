@@ -1,4 +1,4 @@
-# Python-Chess-with-Arcade-library
+# Python-Chess
 
 # Installation
 Requires arcade & stockfish modules downloaded, along with all the files in the repo
