@@ -25,7 +25,7 @@ SCREEN_HEIGHT = 1000
 PIXELS_PER_SQUARE = 100
 
 # path to stockfish executable
-PATH = "c:\\users\\nickbaker\\OneDrive - ACD Systems International Inc\\Documents\\forms\\other\\Chess---Python-Arcade-Library--main\\stockfish-11-win\\Windows\\stockfish_20011801_x64.exe"
+PATH = "stockfish_20011801_x64.exe"
 
 class Chess(arcade.Window):
     '''
