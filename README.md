@@ -1,8 +1,8 @@
 # Python-Chess
 
 # Installation
-Requires arcade & stockfish modules downloaded, along with all the files in the repo\n
-Arcade module&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> pip install arcade\n
+Requires arcade & stockfish modules downloaded, along with all the files in the repo<br>
+Arcade module&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> pip install arcade<br>
 Stockfish module&nbsp;&nbsp;-> pip install stockfish
 
 # Running the game
