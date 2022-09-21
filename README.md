@@ -1,9 +1,9 @@
 # Python-Chess
 
 # Installation
-Requires arcade & stockfish modules downloaded, along with all the files in the repo
-Arcade module     -> pip install arcade
-Stockfish module  -> pip install stockfish
+Requires arcade & stockfish modules downloaded, along with all the files in the repo\n
+Arcade module&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> pip install arcade\n
+Stockfish module&nbsp;&nbsp;-> pip install stockfish
 
 # Running the game
 simply run chess.py; may take a couple seconds to load in the sprites
