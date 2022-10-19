@@ -1180,10 +1180,11 @@ class Pawn(Piece):
         Parameters:
             game_object:    instance of Chess
         '''
-        game_object.check_moves_on_square(self, 0, 1 * self.color, False)
+        # check if there is a piece blocking the pawn moving
+        piece_in_front_pawn = game_object.check_moves_on_square(self, 0, 1 * self.color, False)
        
         # allow pawn to move forward 2 squares (can only move, not capture) if it hasn't moved
-        if not self.moved:
+        if not self.moved and not piece_in_front_pawn:
             game_object.check_moves_on_square(self, 0, 2 * self.color, False)
        
         # allow pawn to capture (not move) to squares diagonally in front of it
